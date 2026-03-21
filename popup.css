@@ -109,8 +109,9 @@ body {
 }
 
 .brand-icon {
-  font-size: 26px;
-  line-height: 1;
+  width: 26px;
+  height: 26px;
+  display: block;
 }
 
 .header-texts h2 {
