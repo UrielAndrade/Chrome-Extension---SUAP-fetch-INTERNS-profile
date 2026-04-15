@@ -16,6 +16,7 @@ class EstagiariosAutomation {
             startTime: null
         };
         this.requestDelayMs = 3000;
+        this.logger = typeof debugLogger !== 'undefined' ? debugLogger : console;
     }
 
     async start(tabId, mode = 'complete') {
@@ -29,18 +30,24 @@ class EstagiariosAutomation {
         this.isPaused = false;
         this.loopActive = false;
 
+        this.logger.info('🚀 Iniciando automação', { mode, tabId });
+
         await this.resetInternalState(false);
 
         const tab = await chrome.tabs.get(tabId);
         if (!tab?.url?.includes('/admin/estagios/praticaprofissional')) {
-            throw new Error('Abra a listagem de estágios do SUAP para iniciar.');
+            const errorMsg = 'Abra a listagem de estágios do SUAP para iniciar.';
+            this.logger.error(errorMsg, { tabUrl: tab?.url });
+            throw new Error(errorMsg);
         }
 
         this.listUrl = this.normalizeFirstPageUrl(tab.url);
         this.stats.startTime = Date.now();
+        this.logger.debug('URL base normalizada', { listUrl: this.listUrl });
 
         await this.buildQueueFromAllPages();
         this.stats.total = this.queue.length;
+        this.logger.info(`✅ Fila construída com ${this.queue.length} estagiários`, { total: this.queue.length });
 
         if (this.queue.length === 0) {
             this.isRunning = false;
@@ -118,6 +125,11 @@ class EstagiariosAutomation {
                 // Timeout de 3s antes de cada request
                 await this.delay(this.requestDelayMs);
 
+                this.logger.debug(`Carregando perfil ${this.currentIndex + 1}/${this.queue.length}`, {
+                    matricula: item.matricula,
+                    url: item.url
+                });
+
                 await chrome.tabs.update(this.tabId, { url: item.url });
                 await this.waitForPageLoad();
 
@@ -137,6 +149,10 @@ class EstagiariosAutomation {
                 item.status = 'completed';
                 this.stats.success += 1;
 
+                this.logger.success(`Coletado: ${result.data.nome || result.data.matricula}`, {
+                    matricula: result.data.matricula
+                });
+
                 this.notifyPopup('collected', result.data);
             } catch (error) {
                 item.status = 'error';
@@ -146,6 +162,10 @@ class EstagiariosAutomation {
                 if (item.retries < 2) {
                     item.retries += 1;
                     item.status = 'retry';
+                    this.logger.warning(`Erro em ${item.nome || item.matricula} (tentativa ${item.retries})`, {
+                        matricula: item.matricula,
+                        error: error.message
+                    });
                     this.notifyPopup('error', {
                         name: item.nome || item.matricula || 'Estagiário',
                         error: `${error.message} (tentando novamente)`
@@ -154,6 +174,11 @@ class EstagiariosAutomation {
                     await this.delay(this.requestDelayMs);
                     continue;
                 }
+
+                this.logger.error(`Falha final em ${item.nome || item.matricula}`, {
+                    matricula: item.matricula,
+                    error: error.message
+                });
 
                 this.notifyPopup('error', {
                     name: item.nome || item.matricula || 'Estagiário',

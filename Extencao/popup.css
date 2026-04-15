@@ -514,3 +514,173 @@ body {
   border-radius: 10px;
 }
 ::-webkit-scrollbar-thumb:hover { background: var(--c4); }
+/* ── Debug Panel ──────────────────────────────────────────────────── */
+.debug-panel {
+  margin-top: 20px;
+  border-top: 2px solid var(--c7);
+  padding-top: 16px;
+}
+
+.debug-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 12px;
+  cursor: pointer;
+}
+
+.debug-header h4 {
+  margin: 0;
+  font-size: 13px;
+  color: var(--c3);
+  font-weight: 600;
+}
+
+.debug-toggle-btn {
+  background: none;
+  border: none;
+  cursor: pointer;
+  font-size: 12px;
+  color: var(--c5);
+  padding: 0;
+  transition: transform 0.2s;
+}
+
+.debug-toggle-btn.expanded {
+  transform: rotate(180deg);
+}
+
+.debug-content {
+  background: var(--c10);
+  border: 1px solid var(--c8);
+  border-radius: 6px;
+  padding: 12px;
+  font-size: 11px;
+}
+
+.debug-tabs {
+  display: flex;
+  gap: 8px;
+  margin-bottom: 12px;
+  flex-wrap: wrap;
+}
+
+.debug-tab {
+  background: var(--c8);
+  border: 1px solid var(--c7);
+  color: var(--c3);
+  padding: 5px 10px;
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.debug-tab:hover {
+  background: var(--c7);
+}
+
+.debug-tab.active {
+  background: var(--g4);
+  color: white;
+  border-color: var(--g3);
+}
+
+.debug-stats {
+  display: grid;
+  grid-template-columns: repeat(2, 1fr);
+  gap: 8px;
+  margin-bottom: 12px;
+  padding: 8px;
+  background: var(--c9);
+  border-radius: 4px;
+  font-size: 10px;
+}
+
+.debug-stats span {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.debug-stats strong {
+  color: var(--g4);
+  font-weight: 700;
+  margin-left: 4px;
+}
+
+.debug-logs {
+  background: var(--c1);
+  color: var(--c8);
+  border-radius: 4px;
+  padding: 8px;
+  height: 200px;
+  overflow-y: auto;
+  margin-bottom: 12px;
+  font-family: 'Courier New', monospace;
+  font-size: 9px;
+  line-height: 1.4;
+}
+
+.debug-log-entry {
+  padding: 4px 0;
+  border-bottom: 1px solid var(--c2);
+  display: none;
+}
+
+.debug-log-entry.visible {
+  display: block;
+}
+
+.debug-log-entry.info { color: var(--b3); }
+.debug-log-entry.success { color: var(--g6); }
+.debug-log-entry.warning { color: var(--y4); }
+.debug-log-entry.error { color: var(--r2); }
+.debug-log-entry.debug { color: var(--c6); }
+
+.debug-log-time {
+  color: var(--c5);
+  margin-right: 8px;
+}
+
+.debug-log-type {
+  display: inline-block;
+  width: 50px;
+  font-weight: 600;
+  margin-right: 8px;
+}
+
+.debug-actions {
+  display: flex;
+  gap: 8px;
+  flex-wrap: wrap;
+}
+
+.debug-btn {
+  flex: 1;
+  min-width: 60px;
+  padding: 6px 8px;
+  border: 1px solid var(--c7);
+  background: var(--c8);
+  color: var(--c3);
+  border-radius: 4px;
+  font-size: 10px;
+  cursor: pointer;
+  transition: all 0.2s;
+}
+
+.debug-btn:hover {
+  background: var(--c7);
+  border-color: var(--c6);
+}
+
+.debug-btn.danger {
+  background: var(--r1);
+  border-color: var(--r2);
+  color: var(--r5);
+}
+
+.debug-btn.danger:hover {
+  background: var(--r2);
+  color: white;
+}

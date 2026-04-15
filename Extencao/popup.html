@@ -2,103 +2,131 @@
 <html lang="pt-BR">
 
 <head>
-  <meta charset="UTF-8">
-  <link rel="stylesheet" href="popup.css">
+    <meta charset="UTF-8">
+    <link rel="stylesheet" href="popup.css">
 </head>
 
 <body>
-  <div class="container">
+    <div class="container">
 
-    <div class="app-header">
-      <div class="header-brand">
-        <img src="icon48.png" alt="Ícone da extensão" class="brand-icon" width="26" height="26">
-        <div class="header-texts">
-          <h2>Coletor de Estagiários</h2>
-          <p class="subtitle">Automação completa com navegação em perfis</p>
+        <div class="app-header">
+            <div class="header-brand">
+                <img src="icon48.png" alt="Ícone da extensão" class="brand-icon" width="26" height="26">
+                <div class="header-texts">
+                    <h2>Coletor de Estagiários</h2>
+                    <p class="subtitle">Automação completa com navegação em perfis</p>
+                </div>
+            </div>
+            <span class="version-badge">v2.0</span>
         </div>
-      </div>
-      <span class="version-badge">v2.0</span>
-    </div>
 
-    <div class="card-body">
+        <div class="card-body">
 
-      <div class="status" id="status">
-        <span class="icon">ℹ️</span>
-        <span id="statusText">Pronto para iniciar</span>
-      </div>
+            <div class="status" id="status">
+                <span class="icon">ℹ️</span>
+                <span id="statusText">Pronto para iniciar</span>
+            </div>
 
-      <div class="stats-grid">
-        <div class="stat-box">
-          <span class="stat-number" id="recordCount">0</span>
-          <span class="stat-label">Coletados</span>
+            <div class="stats-grid">
+                <div class="stat-box">
+                    <span class="stat-number" id="recordCount">0</span>
+                    <span class="stat-label">Coletados</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number" id="pendingCount">0</span>
+                    <span class="stat-label">Pendentes</span>
+                </div>
+                <div class="stat-box">
+                    <span class="stat-number" id="currentPage">0</span>
+                    <span class="stat-label">Página Atual</span>
+                </div>
+            </div>
+
+            <div class="mode-selector">
+                <label for="collectMode">Modo de Coleta</label>
+                <select id="collectMode">
+                    <option value="fast">⚡ Rápida — apenas dados visíveis</option>
+                    <option value="complete">🔍 Completa — entra em cada perfil</option>
+                    <option value="super">🚀 Super Completa — todos os campos</option>
+                </select>
+            </div>
+
+            <div class="buttons">
+                <button id="startBtn" class="btn btn-primary">
+                    ▶️ Iniciar Automação
+                </button>
+                <div class="btn-row">
+                    <button id="pauseBtn" class="btn btn-warning" disabled>⏸️ Pausar</button>
+                    <button id="resumeBtn" class="btn btn-secondary" disabled>▶️ Continuar</button>
+                </div>
+                <div class="btn-row">
+                    <button id="exportBtn" class="btn btn-success" disabled>💾 Exportar CSV</button>
+                    <button id="resetBtn" class="btn btn-danger">🔄 Resetar</button>
+                </div>
+            </div>
+
+            <div class="progress-section">
+                <div class="progress-info">
+                    <span id="progressDetail">Aguardando início...</span>
+                    <span id="progressPercent">0%</span>
+                </div>
+                <div class="progress-bar">
+                    <div class="progress-fill" id="progressFill"></div>
+                </div>
+                <div class="progress-stats">
+                    <small>Tempo estimado: <span id="timeEstimate">--</span></small>
+                </div>
+            </div>
+
+            <div class="live-log" id="liveLog">
+                <h4>📋 Log de Atividade</h4>
+                <div class="log-content" id="logContent">
+                    <p class="log-entry info">Sistema pronto para coleta automatizada</p>
+                </div>
+            </div>
+
+            <div class="preview-section" id="previewSection" style="display: none;">
+                <h4>👁️ Último Registro Coletado</h4>
+                <div class="preview-card" id="previewCard"></div>
+            </div>
+
+            <div class="debug-panel" id="debugPanel">
+                <div class="debug-header">
+                    <h4>🐛 Painel de Debug</h4>
+                    <button id="toggleDebug" class="debug-toggle-btn" title="Expandir/Colapsar debug">▼</button>
+                </div>
+                <div class="debug-content" id="debugContent" style="display: none;">
+                    <div class="debug-tabs">
+                        <button id="debugTabAll" class="debug-tab active">Todos</button>
+                        <button id="debugTabErrors" class="debug-tab">❌ Erros</button>
+                        <button id="debugTabWarnings" class="debug-tab">⚠️ Avisos</button>
+                        <button id="debugTabSuccess" class="debug-tab">✅ Sucesso</button>
+                    </div>
+                    <div class="debug-stats">
+                        <span>Total: <strong id="debugTotal">0</strong></span>
+                        <span>Erros: <strong id="debugErrors">0</strong></span>
+                        <span>Avisos: <strong id="debugWarnings">0</strong></span>
+                        <span>Sucesso: <strong id="debugSuccess">0</strong></span>
+                    </div>
+                    <div class="debug-logs" id="debugLogs"></div>
+                    <div class="debug-actions">
+                        <button id="debugExportJSON" class="debug-btn">📥 JSON</button>
+                        <button id="debugExportCSV" class="debug-btn">📊 CSV</button>
+                        <button id="debugClear" class="debug-btn danger">🗑️ Limpar</button>
+                    </div>
+                </div>
+            </div>
+
+        </div><!-- /.card-body -->
+
+        <div class="footer">
+            <small>⚠️ Não feche o Chrome durante a automação</small>
         </div>
-        <div class="stat-box">
-          <span class="stat-number" id="pendingCount">0</span>
-          <span class="stat-label">Pendentes</span>
-        </div>
-        <div class="stat-box">
-          <span class="stat-number" id="currentPage">0</span>
-          <span class="stat-label">Página Atual</span>
-        </div>
-      </div>
 
-      <div class="mode-selector">
-        <label for="collectMode">Modo de Coleta</label>
-        <select id="collectMode">
-          <option value="fast">⚡ Rápida — apenas dados visíveis</option>
-          <option value="complete">🔍 Completa — entra em cada perfil</option>
-          <option value="super">🚀 Super Completa — todos os campos</option>
-        </select>
-      </div>
+    </div><!-- /.container -->
 
-      <div class="buttons">
-        <button id="startBtn" class="btn btn-primary">
-          ▶️ Iniciar Automação
-        </button>
-        <div class="btn-row">
-          <button id="pauseBtn" class="btn btn-warning" disabled>⏸️ Pausar</button>
-          <button id="resumeBtn" class="btn btn-secondary" disabled>▶️ Continuar</button>
-        </div>
-        <div class="btn-row">
-          <button id="exportBtn" class="btn btn-success" disabled>💾 Exportar CSV</button>
-          <button id="resetBtn" class="btn btn-danger">🔄 Resetar</button>
-        </div>
-      </div>
-
-      <div class="progress-section">
-        <div class="progress-info">
-          <span id="progressDetail">Aguardando início...</span>
-          <span id="progressPercent">0%</span>
-        </div>
-        <div class="progress-bar">
-          <div class="progress-fill" id="progressFill"></div>
-        </div>
-        <div class="progress-stats">
-          <small>Tempo estimado: <span id="timeEstimate">--</span></small>
-        </div>
-      </div>
-
-      <div class="live-log" id="liveLog">
-        <h4>📋 Log de Atividade</h4>
-        <div class="log-content" id="logContent">
-          <p class="log-entry info">Sistema pronto para coleta automatizada</p>
-        </div>
-      </div>
-
-      <div class="preview-section" id="previewSection" style="display: none;">
-        <h4>👁️ Último Registro Coletado</h4>
-        <div class="preview-card" id="previewCard"></div>
-      </div>
-
-    </div><!-- /.card-body -->
-
-    <div class="footer">
-      <small>⚠️ Não feche o Chrome durante a automação</small>
-    </div>
-
-  </div><!-- /.container -->
-
-  <script src="popup.js"></script>
+    <script src="logger.js"></script>
+    <script src="popup.js"></script>
 </body>
 
 </html>
