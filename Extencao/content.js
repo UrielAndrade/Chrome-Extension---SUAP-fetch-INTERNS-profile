@@ -132,7 +132,7 @@ function extractRowData(row) {
                 action: () => {
                     data.nome = text;
                     // Extrai matrícula do link
-                    const link = cell.querySelector('a');
+                    const link = row.querySelector('th a.icon.view, th a[class*="icon"][class*="view"], a.icon.view, a');
                     if (link) {
                         const href = link.getAttribute('href') || '';
                         const match = href.match(/(\d{6,})/);
@@ -223,13 +223,26 @@ function extractPopupUserData(profileHtml) {
     const data = {
         nome: '',
         matricula: '',
+        ingresso: '',
         email: '',
+        emailAcademico: '',
+        emailGoogleSalaAula: '',
         telefone: '',
         cpf: '',
         dataNascimento: '',
+        periodoReferencia: '',
+        ira: '',
+        curso: '',
+        matriz: '',
+        qtdPeriodos: '',
+        situacaoSistemica: '',
+        dataMigracao: '',
+        impressaoDigital: '',
+        emitiuDiploma: '',
         endereco: '',
         cidade: '',
-        estado: ''
+        estado: '',
+        linkPerfilPessoal: ''
     };
 
     // Procura por tabela com class "info"
@@ -241,27 +254,43 @@ function extractPopupUserData(profileHtml) {
         const cells = row.querySelectorAll('td');
         if (cells.length < 2) return;
 
-        const label = cells[0]?.textContent?.trim().toLowerCase() || '';
+        const label = cells[0]?.textContent?.trim().replace(/:$/, '').toLowerCase() || '';
         const value = cells[1]?.textContent?.trim() || '';
 
         if (label.includes('nome')) data.nome = value;
         if (label.includes('matrícula')) data.matricula = value;
+        if (label.includes('ingresso')) data.ingresso = value;
         if (label.includes('email')) data.email = value;
+        if (label.includes('e-mail acadêmico')) data.emailAcademico = value;
+        if (label.includes('e-mail google sala de aula')) data.emailGoogleSalaAula = value;
         if (label.includes('telefone')) data.telefone = value;
         if (label.includes('cpf')) data.cpf = value;
         if (label.includes('nascimento')) data.dataNascimento = value;
+        if (label.includes('período de referência')) data.periodoReferencia = value;
+        if (label.includes('i.r.a')) data.ira = value;
+        if (label.includes('curso')) data.curso = value;
+        if (label.includes('matriz')) data.matriz = value;
+        if (label.includes('qtd. períodos')) data.qtdPeriodos = value;
+        if (label.includes('situação sistêmica')) data.situacaoSistemica = value;
+        if (label.includes('data da migração')) data.dataMigracao = value;
+        if (label.includes('impressão digital')) data.impressaoDigital = value;
+        if (label.includes('emitiu diploma')) data.emitiuDiploma = value;
         if (label.includes('endereço')) data.endereco = value;
         if (label.includes('cidade')) data.cidade = value;
         if (label.includes('estado')) data.estado = value;
     });
 
     // Trata popup-user (modal ou popup aberto)
-    const popupUser = profileHtml.querySelector('.popup-user, [class*="popup"]');
-    if (popupUser) {
-        const link = popupUser.querySelector('a[href*="/edu/aluno/"]');
-        if (link) {
-            // Extrai matrícula da URL do link
-            const match = link.getAttribute('href')?.match(/\/aluno\/(\d+)/);
+    const popupUserLink = profileHtml.querySelector(
+        'table.info tbody tr td.estagiario + td .popup-user a[href*="/edu/aluno/"], table.info tbody tr td.estagiario .popup-user a[href*="/edu/aluno/"], .popup-user a[href*="/edu/aluno/"]'
+    );
+
+    if (popupUserLink) {
+        const href = popupUserLink.getAttribute('href') || '';
+        if (href) {
+            data.linkPerfilPessoal = new URL(href, window.location.href).href;
+
+            const match = href.match(/\/edu\/aluno\/(\d+)/);
             if (match) data.matricula = match[1];
         }
     }
