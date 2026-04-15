@@ -1,3 +1,13 @@
+/**
+ * SUAP Coletor de Estagiários - Background Service Worker
+ * Carrega logger antes de qualquer código
+ */
+
+// Logger será injetado dinamicamente via importScripts
+if (!self.debugLogger) {
+    console.warn('Logger não disponível - será carregado via script');
+}
+
 class EstagiariosAutomation {
     constructor() {
         this.isRunning = false;
@@ -678,3 +688,9 @@ function extractDetailedData(mode, baseInfo) {
 chrome.runtime.onInstalled.addListener(() => {
     console.log('SUAP Coletor PRO instalado');
 });
+// ── Carrega o logger como importScript (Manifest v3) ────────────
+try {
+    importScripts('logger.js');
+} catch (e) {
+    console.error('Erro ao carregar logger.js:', e);
+}

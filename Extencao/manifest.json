@@ -24,7 +24,7 @@
     }
   },
   "background": {
-    "service_worker": ["logger.js", "background.js"]
+    "service_worker": "background.js"
   },
   "content_scripts": [
     {
