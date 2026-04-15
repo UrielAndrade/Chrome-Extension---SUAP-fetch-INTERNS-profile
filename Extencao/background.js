@@ -15,6 +15,7 @@ class EstagiariosAutomation {
             errors: 0,
             startTime: null
         };
+        this.requestDelayMs = 3000;
     }
 
     async start(tabId, mode = 'complete') {
@@ -91,7 +92,7 @@ class EstagiariosAutomation {
 
             const nextUrl = result?.nextUrl || '';
             currentUrl = nextUrl && !visited.has(nextUrl) ? nextUrl : '';
-            await this.delay(500);
+            await this.delay(this.requestDelayMs);
         }
 
         this.queue = Array.from(linksMap.values());
@@ -114,8 +115,8 @@ class EstagiariosAutomation {
             });
 
             try {
-                // Timeout de 1s antes de cada request
-                await this.delay(1000);
+                // Timeout de 3s antes de cada request
+                await this.delay(this.requestDelayMs);
 
                 await chrome.tabs.update(this.tabId, { url: item.url });
                 await this.waitForPageLoad();
@@ -150,7 +151,7 @@ class EstagiariosAutomation {
                         error: `${error.message} (tentando novamente)`
                     });
                     // Timeout antes de retry
-                    await this.delay(1500);
+                    await this.delay(this.requestDelayMs);
                     continue;
                 }
 
@@ -162,8 +163,8 @@ class EstagiariosAutomation {
 
             this.currentIndex += 1;
             await this.saveState();
-            // Aguarda 1s entre processamentos
-            await this.delay(1000);
+            // Aguarda 3s entre processamentos
+            await this.delay(this.requestDelayMs);
         }
 
         this.isRunning = false;
