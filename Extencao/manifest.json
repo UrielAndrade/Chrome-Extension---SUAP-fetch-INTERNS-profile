@@ -32,6 +32,7 @@
         "https://suap.ifro.edu.br/admin/estagios/praticaprofissional/*"
       ],
       "js": [
+        "data-extractor.js",
         "content.js"
       ],
       "run_at": "document_idle"

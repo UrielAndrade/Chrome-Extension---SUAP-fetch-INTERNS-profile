@@ -22,6 +22,7 @@ function bindEvents() {
     document.getElementById('pauseBtn').addEventListener('click', pauseAutomation);
     document.getElementById('resumeBtn').addEventListener('click', resumeAutomation);
     document.getElementById('exportBtn').addEventListener('click', exportData);
+    document.getElementById('exportDataBtn').addEventListener('click', exportDataAsCSV);
     document.getElementById('resetBtn').addEventListener('click', resetAutomation);
 
     // Debug panel events
@@ -413,4 +414,84 @@ async function clearDebugLogs() {
     } catch (e) {
         setStatus('error', `❌ Erro ao limpar logs: ${e.message}`);
     }
+}
+// ── Extração de Dados do SUAP ────────────────────────────────────
+
+/**
+ * Exporta dados coletados como CSV
+ */
+async function exportDataAsCSV() {
+    try {
+        // Obtém dados da página atual via content script
+        const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
+        if (!tabs[0]) {
+            setStatus('error', '❌ Nenhuma aba ativa');
+            return;
+        }
+
+        const data = await chrome.tabs.sendMessage(tabs[0].id, {
+            action: 'extractData'
+        }).catch(() => null);
+
+        if (!data) {
+            setStatus('warning', '⚠️ Nenhum dado encontrado na página');
+            return;
+        }
+
+        // Formata como CSV
+        const csv = formatDataAsCSV(Array.isArray(data) ? data : [data]);
+
+        // Baixa arquivo
+        const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
+        const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
+        const url = URL.createObjectURL(blob);
+
+        await chrome.downloads.download({
+            url,
+            filename: `estagiarios_suap_${timestamp}.csv`,
+            saveAs: true
+        });
+
+        setStatus('success', '✅ Dados exportados como CSV');
+        addLog('success', 'Arquivo CSV exportado com sucesso');
+    } catch (error) {
+        setStatus('error', `❌ Erro ao exportar: ${error.message}`);
+        addLog('error', `Erro na exportação: ${error.message}`);
+    }
+}
+
+/**
+ * Formata dados em formato CSV
+ */
+function formatDataAsCSV(dataArray) {
+    if (!dataArray || dataArray.length === 0) return '';
+
+    // Coleta todas as chaves
+    const allKeys = new Set();
+    dataArray.forEach(row => {
+        if (typeof row === 'object') {
+            Object.keys(row).forEach(key => allKeys.add(key));
+        }
+    });
+
+    const headers = Array.from(allKeys).sort();
+    const lines = [];
+
+    // Header
+    lines.push(headers.map(h => `"${h}"`).join(';'));
+
+    // Dados
+    dataArray.forEach(row => {
+        const values = headers.map(header => {
+            let value = row[header] || '';
+            value = String(value)
+                .replace(/"/g, '""')
+                .replace(/\n/g, ' ')
+                .replace(/;/g, ',');
+            return `"${value}"`;
+        });
+        lines.push(values.join(';'));
+    });
+
+    return lines.join('\n');
 }

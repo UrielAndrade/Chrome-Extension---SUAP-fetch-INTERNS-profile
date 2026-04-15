@@ -30,6 +30,19 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
         sendResponse(data);
     }
 
+    if (request.action === 'extractData') {
+        // Novo: Usa o extrator de dados
+        try {
+            const extractor = new SUAPDataExtractor();
+            const data = extractor.extractComprehensiveData();
+            sendResponse(data);
+        } catch (e) {
+            console.error('Erro ao extrair dados:', e);
+            sendResponse(null);
+        }
+        return true;
+    }
+
     if (request.action === 'getStageStatus') {
         // Extrai o status visual do estágio (imagem/classe status)
         const statusData = extractStageStatus();
@@ -38,6 +51,7 @@ chrome.runtime.onMessage.addListener((request, sender, sendResponse) => {
 
     return true;
 });
+
 
 // Aguarda delay de 1 segundo
 function delay(ms) {
