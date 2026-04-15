@@ -172,6 +172,6 @@ this.logger.error(`Falha final em ${nome}`, { error });
 
 ---
 
-**Data**: 15 de abril de 2026  
-**Versão**: 2.0.0  
+**Data**: 15 de abril de 2026
+**Versão**: 2.0.0
 **Status**: ✅ Completo e funcional
