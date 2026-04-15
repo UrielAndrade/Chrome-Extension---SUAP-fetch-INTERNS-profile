@@ -427,6 +427,8 @@ function extractPageLinksAndNext() {
 
         // Procura por link de acesso ao estagiário
         const link =
+            row.querySelector('th a.icon.view') ||
+            row.querySelector('th a[class*="icon"][class*="view"]') ||
             row.querySelector('a[href*="/admin/estagios/praticaprofissional/"]') ||
             row.querySelector('a[href*="praticaprofissional"]') ||
             row.querySelector('a.icon.view') ||
@@ -497,13 +499,19 @@ function extractDetailedData(mode, baseInfo) {
     const labelMap = {
         'Nome': 'nome',
         'Matrícula': 'matricula',
+        'Ingresso': 'ingresso',
         'Curso': 'curso',
         'Situação': 'status',
         'Situação Sistêmica': 'statusSistemico',
         'E-mail Acadêmico': 'emailAcademico',
         'E-mail': 'email',
+        'E-mail Google Sala de Aula': 'emailGoogleSalaAula',
         'CPF': 'cpf',
+        'Período de Referência': 'periodoReferencia',
+        'I.R.A.': 'ira',
         'Telefone': 'telefone',
+        'Matriz': 'matriz',
+        'Qtd. Períodos': 'qtdPeriodos',
         'Concedente': 'concedente',
         'Supervisor': 'supervisor',
         'Orientador': 'orientador',
@@ -512,7 +520,10 @@ function extractDetailedData(mode, baseInfo) {
         'Data Fim': 'dataFim',
         'Carga Horária': 'cargaHoraria',
         'Bolsa': 'bolsa',
-        'Auxílio Transporte': 'auxilioTransporte'
+        'Auxílio Transporte': 'auxilioTransporte',
+        'Data da Migração': 'dataMigracao',
+        'Impressão Digital': 'impressaoDigital',
+        'Emitiu Diploma': 'emitiuDiploma'
     };
 
     const rawFields = {};
@@ -560,6 +571,10 @@ function extractDetailedData(mode, baseInfo) {
     // Extrai dados da tabela popup-user (perfil do aluno)
     const popupTable = document.querySelector('table.info');
     if (popupTable) {
+        const profileLink = popupTable.querySelector(
+            'tbody tr td.estagiario + td .popup-user a[href*="/edu/aluno/"], tbody tr td.estagiario .popup-user a[href*="/edu/aluno/"], .popup-user a[href*="/edu/aluno/"]'
+        );
+
         popupTable.querySelectorAll('tbody tr').forEach(row => {
             const cells = row.querySelectorAll('td');
             if (cells.length < 2) return;
@@ -577,17 +592,21 @@ function extractDetailedData(mode, baseInfo) {
                 });
             }
         });
-    }
 
-    // Extrai link de perfil do popup-user (href: edu/aluno/MATRICULA)
-    const popupUserLink = document.querySelector('.popup-user a[href*="/edu/aluno/"]');
-    if (popupUserLink) {
-        const href = popupUserLink.getAttribute('href');
-        const match = href.match(/\/aluno\/(\d+)/);
-        if (match) {
-            data.matriculaPopup = match[1];
+        if (profileLink) {
+            const href = profileLink.getAttribute('href') || '';
+            if (href) {
+                data.linkPerfilPessoal = new URL(href, window.location.href).href;
+
+                const match = href.match(/\/edu\/aluno\/(\d+)/);
+                if (match) {
+                    data.matriculaPopup = match[1];
+                    if (!data.matricula) {
+                        data.matricula = match[1];
+                    }
+                }
+            }
         }
-        data.linkPerfil = href;
     }
 
     // Extrai texto completo da página para buscar dados por regex
