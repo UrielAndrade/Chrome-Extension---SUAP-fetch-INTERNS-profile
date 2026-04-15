@@ -300,19 +300,42 @@ function sendMessage(payload) {
 
 async function initDebugPanel() {
     try {
-        const bg = await chrome.runtime.getBackgroundPage?.() || chrome.extension.getBackgroundPage?.();
-        bgDebugLogger = bg?.debugLogger;
+        // Tenta obter a página de background de forma segura
+        let bg = null;
 
-        if (bgDebugLogger) {
+        // Tenta método moderno primeiro (Manifest v3)
+        if (chrome.runtime.getBackgroundPage) {
+            try {
+                bg = await chrome.runtime.getBackgroundPage();
+            } catch (e) {
+                console.debug('getBackgroundPage não disponível:', e.message);
+            }
+        }
+
+        // Fallback para método antigo (Manifest v2)
+        if (!bg && chrome.extension?.getBackgroundPage) {
+            try {
+                bg = chrome.extension.getBackgroundPage();
+            } catch (e) {
+                console.debug('extension.getBackgroundPage não disponível:', e.message);
+            }
+        }
+
+        if (bg && bg.debugLogger) {
+            bgDebugLogger = bg.debugLogger;
             updateDebugDisplay();
 
-            // Registra listener para novos logs
-            bgDebugLogger.onLog(() => {
-                updateDebugDisplay();
-            });
+            // Registra listener para novos logs se disponível
+            if (typeof bgDebugLogger.onLog === 'function') {
+                bgDebugLogger.onLog(() => {
+                    updateDebugDisplay();
+                });
+            }
 
             // Auto-atualiza a cada 1s
             setInterval(updateDebugDisplay, 1000);
+        } else {
+            console.warn('debugLogger não encontrado no background page');
         }
     } catch (e) {
         console.error('Erro ao inicializar debug panel:', e);
@@ -424,37 +447,63 @@ async function exportDataAsCSV() {
     try {
         // Obtém dados da página atual via content script
         const tabs = await chrome.tabs.query({ active: true, currentWindow: true });
-        if (!tabs[0]) {
+        if (!tabs || tabs.length === 0 || !tabs[0]) {
             setStatus('error', '❌ Nenhuma aba ativa');
             return;
         }
 
-        const data = await chrome.tabs.sendMessage(tabs[0].id, {
-            action: 'extractData'
-        }).catch(() => null);
+        let data;
+        try {
+            data = await chrome.tabs.sendMessage(tabs[0].id, {
+                action: 'extractData'
+            });
+        } catch (e) {
+            console.warn('Erro ao enviar mensagem para content script:', e);
+            setStatus('error', '❌ Erro ao comunicar com a página. Certifique-se de estar na página de estágios do SUAP.');
+            addLog('error', `Erro na comunicação: ${e.message}`);
+            return;
+        }
 
-        if (!data) {
-            setStatus('warning', '⚠️ Nenhum dado encontrado na página');
+        if (!data || (Array.isArray(data) && data.length === 0)) {
+            setStatus('warning', '⚠️ Nenhum dado encontrado na página. Verifique se você está na página correta.');
+            addLog('warning', 'Nenhum dado encontrado na página.');
             return;
         }
 
         // Formata como CSV
         const csv = formatDataAsCSV(Array.isArray(data) ? data : [data]);
 
+        if (!csv) {
+            setStatus('error', '❌ Erro ao formatar dados para CSV');
+            return;
+        }
+
         // Baixa arquivo
         const timestamp = new Date().toISOString().replace(/[:.]/g, '-');
         const blob = new Blob(['\ufeff' + csv], { type: 'text/csv;charset=utf-8;' });
         const url = URL.createObjectURL(blob);
 
-        await chrome.downloads.download({
-            url,
-            filename: `estagiarios_suap_${timestamp}.csv`,
-            saveAs: true
-        });
+        try {
+            await chrome.downloads.download({
+                url,
+                filename: `estagiarios_suap_${timestamp}.csv`,
+                saveAs: true
+            });
+        } catch (downloadError) {
+            console.warn('Erro no chrome.downloads, tentando fallback:', downloadError);
+            // Fallback: trigger download via link
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = `estagiarios_suap_${timestamp}.csv`;
+            document.body.appendChild(link);
+            link.click();
+            document.body.removeChild(link);
+        }
 
         setStatus('success', '✅ Dados exportados como CSV');
         addLog('success', 'Arquivo CSV exportado com sucesso');
     } catch (error) {
+        console.error('Erro geral na exportação:', error);
         setStatus('error', `❌ Erro ao exportar: ${error.message}`);
         addLog('error', `Erro na exportação: ${error.message}`);
     }
