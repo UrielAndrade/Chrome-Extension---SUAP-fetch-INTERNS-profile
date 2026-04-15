@@ -12,7 +12,7 @@
     "background"
   ],
   "host_permissions": [
-    "https://suap.ifro.edu.br/*"
+    "https://suap.ifro.edu.br/admin/estagios/praticaprofissional/*"
   ],
   "icons": {
     "128": "icon128.png"
@@ -29,7 +29,7 @@
   "content_scripts": [
     {
       "matches": [
-        "https://suap.ifro.edu.br/*"
+        "https://suap.ifro.edu.br/admin/estagios/praticaprofissional/*"
       ],
       "js": [
         "content.js"
